@@ -365,6 +365,8 @@ class ImageViewer extends Component<IProps> {
       styles.panGestureInner,
       {
         backgroundColor: containerColor,
+        width: areaWidth,
+        height: areaHeight,
       },
     ];
 
