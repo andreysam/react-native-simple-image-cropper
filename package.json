@@ -2,8 +2,7 @@
   "name": "react-native-simple-image-cropper",
   "version": "3.2.1",
   "description": "",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "src/index.ts",
   "scripts": {
     "dev": "yarn tsc --watch",
     "build": "rm -rf ./build/* && tsc",
