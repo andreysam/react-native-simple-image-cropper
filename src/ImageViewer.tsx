@@ -6,7 +6,7 @@ import {
   State,
   TapGestureHandler,
 } from 'react-native-gesture-handler';
-import Animated, { Easing } from 'react-native-reanimated';
+import Animated, { EasingNode } from 'react-native-reanimated';
 import { timing } from './helpers/reanimatedTiming';
 import { IImageViewerData } from './types';
 
@@ -95,7 +95,7 @@ class ImageViewer extends Component<IProps> {
 
     const timingDefaultParams = {
       duration: 200,
-      easing: Easing.linear,
+      easing: EasingNode.linear,
     };
 
     const maxScale = minScale + 3;
