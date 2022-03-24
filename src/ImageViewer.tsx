@@ -48,7 +48,6 @@ const {
 
 const styles = StyleSheet.create({
   panGestureInner: {
-    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
   },
