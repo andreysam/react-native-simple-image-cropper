@@ -48,7 +48,7 @@ const defaultProps = {
 };
 
 class ImageCropper extends PureComponent<IProps, IState> {
-  static crop = (params: ICropParams): Promise<string | null | undefined> => {
+  static crop = async (params: ICropParams): Promise<string | null | undefined> => {
     const {
       positionX,
       positionY,
@@ -59,6 +59,8 @@ class ImageCropper extends PureComponent<IProps, IState> {
       cropAreaSize,
       imageUri,
     } = params;
+
+    const realDimensions = await new Promise<{ width: number, height: number }>(resolve => Image.getSize(imageUri, (width, height) => resolve({ width, height }))) 
 
     const offset = {
       x: 0,
@@ -115,8 +117,8 @@ class ImageCropper extends PureComponent<IProps, IState> {
     const cropData = {
       offset,
       size: {
-        width: Math.round(sizeW),
-        height: Math.round(sizeH),
+        width: Math.min(Math.round(sizeW), realDimensions.width - offset.x),
+        height: Math.min(Math.round(sizeH), realDimensions.height - offset.y),
       },
       displaySize: {
         width: Math.round(cropSize.width),
@@ -124,9 +126,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       },
     };
 
-    return new Promise((resolve, reject) =>
-      ImageEditor.cropImage(imageUri, cropData).then(resolve).catch(reject),
-    );
+    return ImageEditor.cropImage(imageUri, cropData);
   };
 
   static defaultProps = defaultProps;
@@ -166,8 +166,8 @@ class ImageCropper extends PureComponent<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps) {
-    const { imageUri } = this.props;
-    if (imageUri && prevProps.imageUri !== imageUri) {
+    const { imageUri, cropAreaHeight, cropAreaWidth } = this.props;
+    if (imageUri && prevProps.imageUri !== imageUri && prevProps.cropAreaHeight !== cropAreaHeight && prevProps.imagcropAreaWidtheUri !== cropAreaWidth) {
       this.init();
     }
   }
