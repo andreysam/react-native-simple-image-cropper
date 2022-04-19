@@ -1,5 +1,5 @@
 import React, { PureComponent, ReactNode } from 'react';
-import { Image, Dimensions } from 'react-native';
+import { Dimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ImageEditor from '@react-native-community/image-editor';
 import ImageSize from 'react-native-image-size';
@@ -56,7 +56,6 @@ class ImageCropper extends PureComponent<IProps, IState> {
       positionX,
       positionY,
       scale,
-      srcSize,
       fittedSize,
       cropSize,
       cropAreaSize,
@@ -105,14 +104,23 @@ class ImageCropper extends PureComponent<IProps, IState> {
       fittedSize.height,
     );
 
-    const offsetW = getPercentFromNumber(srcPercentCropperAreaW, srcSize.width);
+    const offsetW = getPercentFromNumber(
+      srcPercentCropperAreaW,
+      realDimensions.width,
+    );
     const offsetH = getPercentFromNumber(
       srcPercentCropperAreaH,
-      srcSize.height,
+      realDimensions.height,
     );
 
-    const sizeW = getPercentFromNumber(percentCropperAreaW, srcSize.width);
-    const sizeH = getPercentFromNumber(percentCropperAreaH, srcSize.height);
+    const sizeW = getPercentFromNumber(
+      percentCropperAreaW,
+      realDimensions.width,
+    );
+    const sizeH = getPercentFromNumber(
+      percentCropperAreaH,
+      realDimensions.height,
+    );
 
     offset.x = Math.floor(offsetW);
     offset.y = Math.floor(offsetH);
@@ -180,70 +188,65 @@ class ImageCropper extends PureComponent<IProps, IState> {
     }
   }
 
-  init = () => {
+  init = async () => {
     const { imageUri } = this.props;
+    const { width, height } = await ImageSize.getSize(imageUri);
 
-    Image.getSize(
-      imageUri,
-      (width, height) => {
-        const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
+    const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
 
-        const areaWidth = cropAreaWidth!;
-        const areaHeight = cropAreaHeight!;
+    const areaWidth = cropAreaWidth!;
+    const areaHeight = cropAreaHeight!;
 
-        const srcSize = { width, height };
-        const fittedSize = { width: 0, height: 0 };
-        let scale = 1;
+    const srcSize = { width, height };
+    const fittedSize = { width: 0, height: 0 };
+    let scale = 1;
 
-        if (width > height) {
-          const ratio = w / height;
-          fittedSize.width = width * ratio;
-          fittedSize.height = w;
-        } else if (width < height) {
-          const ratio = w / width;
-          fittedSize.width = w;
-          fittedSize.height = height * ratio;
-        } else if (width === height) {
-          fittedSize.width = w;
-          fittedSize.height = w;
+    if (width > height) {
+      const ratio = w / height;
+      fittedSize.width = width * ratio;
+      fittedSize.height = w;
+    } else if (width < height) {
+      const ratio = w / width;
+      fittedSize.width = w;
+      fittedSize.height = height * ratio;
+    } else if (width === height) {
+      fittedSize.width = w;
+      fittedSize.height = w;
+    }
+
+    if (areaWidth < areaHeight || areaWidth === areaHeight) {
+      if (width < height) {
+        if (fittedSize.height < areaHeight) {
+          scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
+        } else {
+          scale = Math.ceil((areaWidth / fittedSize.width) * 10) / 10;
         }
+      } else {
+        scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
+      }
+    }
 
-        if (areaWidth < areaHeight || areaWidth === areaHeight) {
-          if (width < height) {
-            if (fittedSize.height < areaHeight) {
-              scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
-            } else {
-              scale = Math.ceil((areaWidth / fittedSize.width) * 10) / 10;
-            }
-          } else {
-            scale = Math.ceil((areaHeight / fittedSize.height) * 10) / 10;
-          }
-        }
+    scale = scale < 1 ? 1 : scale;
 
-        scale = scale < 1 ? 1 : scale;
+    this.setState(
+      (prevState) => ({
+        ...prevState,
+        srcSize,
+        fittedSize,
+        minScale: scale,
+        loading: false,
+      }),
+      () => {
+        const { positionX, positionY } = this.state;
 
-        this.setState(
-          (prevState) => ({
-            ...prevState,
-            srcSize,
-            fittedSize,
-            minScale: scale,
-            loading: false,
-          }),
-          () => {
-            const { positionX, positionY } = this.state;
-
-            setCropperParams({
-              positionX,
-              positionY,
-              scale,
-              srcSize,
-              fittedSize,
-            });
-          },
-        );
+        setCropperParams({
+          positionX,
+          positionY,
+          scale,
+          srcSize,
+          fittedSize,
+        });
       },
-      () => {},
     );
   };
 
