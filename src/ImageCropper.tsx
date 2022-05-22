@@ -64,6 +64,12 @@ class ImageCropper extends PureComponent<IProps, IState> {
 
     const realDimensions = await ImageSize.getSize(imageUri);
 
+    if ([90, 270].includes(realDimensions.rotation || 0)) {
+      const { width } = realDimensions;
+      realDimensions.width = realDimensions.height;
+      realDimensions.height = width;
+    }
+
     const offset = {
       x: 0,
       y: 0,
@@ -190,7 +196,15 @@ class ImageCropper extends PureComponent<IProps, IState> {
 
   init = async () => {
     const { imageUri } = this.props;
-    const { width, height } = await ImageSize.getSize(imageUri);
+    const dimensions = await ImageSize.getSize(imageUri);
+
+    if ([90, 270].includes(dimensions.rotation || 0)) {
+      const { width } = dimensions;
+      dimensions.width = dimensions.height;
+      dimensions.height = width;
+    }
+
+    const { width, height } = dimensions;
 
     const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
 
