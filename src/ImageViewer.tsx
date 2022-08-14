@@ -62,7 +62,7 @@ const ImageViewer = ({
     duration: 200,
   };
 
-  const maxScale = minScale + 3;
+  const maxScale = minScale + 100;
 
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
@@ -86,6 +86,7 @@ const ImageViewer = ({
 
   const TapGesture = Gesture.Tap()
     .numberOfTaps(2)
+    .runOnJS(true)
     .onEnd(() => {
       offsetZ.value = minScale;
       offsetX.value = 0;
@@ -94,6 +95,11 @@ const ImageViewer = ({
       scale.value = withTiming(minScale, timingDefaultParams);
       translateX.value = withTiming(0, timingDefaultParams);
       translateY.value = withTiming(0, timingDefaultParams);
+      onMove({
+        positionX: offsetX.value,
+        positionY: offsetY.value,
+        scale: offsetZ.value,
+      });
     });
 
   const PanGesture = Gesture.Pan()
@@ -168,6 +174,16 @@ const ImageViewer = ({
       negMaxY.value = -verticalMax.value;
     });
 
+  const PanJSGesture = Gesture.Pan()
+    .runOnJS(true)
+    .onEnd(() => {
+      onMove({
+        positionX: offsetX.value,
+        positionY: offsetY.value,
+        scale: offsetZ.value,
+      });
+    });
+
   const imageSrc = {
     uri: image,
   };
@@ -221,7 +237,10 @@ const ImageViewer = ({
     });
   });
 
-  const gesture = Gesture.Simultaneous(TapGesture, PinchGesture, PanGesture);
+  const gesture = Gesture.Race(
+    Gesture.Simultaneous(PinchGesture, PanGesture, PanJSGesture),
+    TapGesture,
+  );
 
   return (
     <GestureDetector gesture={gesture}>
