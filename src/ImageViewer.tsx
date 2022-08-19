@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -106,6 +107,7 @@ const ImageViewer = ({
     .minPointers(1)
     .maxPointers(2)
     .averageTouches(true)
+    .minDistance(0)
     .onBegin(() => {
       maxX.value = horizontalMax.value;
       negMaxX.value = -horizontalMax.value;
@@ -142,6 +144,12 @@ const ImageViewer = ({
 
       offsetX.value = newTranslateX;
       offsetY.value = newTranslateY;
+
+      runOnJS(onMove)({
+        positionX: offsetX.value,
+        positionY: offsetY.value,
+        scale: offsetZ.value,
+      });
     });
 
   const PinchGesture = Gesture.Pinch()
@@ -172,16 +180,6 @@ const ImageViewer = ({
 
       maxY.value = verticalMax.value;
       negMaxY.value = -verticalMax.value;
-    });
-
-  const PanJSGesture = Gesture.Pan()
-    .runOnJS(true)
-    .onEnd(() => {
-      onMove({
-        positionX: offsetX.value,
-        positionY: offsetY.value,
-        scale: offsetZ.value,
-      });
     });
 
   const imageSrc = {
@@ -238,7 +236,7 @@ const ImageViewer = ({
   });
 
   const gesture = Gesture.Race(
-    Gesture.Simultaneous(PinchGesture, PanGesture, PanJSGesture),
+    Gesture.Simultaneous(PinchGesture, PanGesture),
     TapGesture,
   );
 
