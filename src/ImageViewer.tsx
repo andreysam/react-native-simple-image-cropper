@@ -7,7 +7,12 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { IImageViewerData } from './types';
+
+interface IImageViewerData {
+  positionX: number;
+  positionY: number;
+  scale: number;
+}
 
 interface IProps {
   image: string;
@@ -233,7 +238,7 @@ const ImageViewer = ({
       positionY: translateY.value,
       scale: scale.value,
     });
-  });
+  }, []);
 
   const gesture = Gesture.Race(
     Gesture.Simultaneous(PinchGesture, PanGesture),
