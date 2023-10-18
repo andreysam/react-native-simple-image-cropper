@@ -1,6 +1,5 @@
 import React, { PureComponent, ReactNode } from 'react';
 import { Dimensions } from 'react-native';
-import ImageEditor from '@react-native-community/image-editor';
 import ImageSize from 'react-native-image-size';
 import ImageViewer from './ImageViewer';
 import {
@@ -48,9 +47,7 @@ const defaultProps = {
 };
 
 class ImageCropper extends PureComponent<IProps, IState> {
-  static crop = async (
-    params: ICropParams,
-  ): Promise<string | null | undefined> => {
+  static transformParams = async (params: ICropParams) => {
     const {
       positionX,
       positionY,
@@ -142,7 +139,7 @@ class ImageCropper extends PureComponent<IProps, IState> {
       },
     };
 
-    return ImageEditor.cropImage(imageUri, cropData);
+    return cropData;
   };
 
   static defaultProps = defaultProps;
